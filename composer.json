@@ -1,0 +1,14 @@
+{
+    "name": "gwleuverink/embedded-php",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "gwleuverink",
+            "email": "willem@leuver.ink"
+        }
+    ],
+    "require-dev": {
+        "nativephp/php-bin": "^0.5.6"
+    }
+}
