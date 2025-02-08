@@ -15,7 +15,7 @@ unzip ../vendor/nativephp/php-bin/bin/mac/arm64/php-8.4.zip -d php_binary
 ls -la php_binary
 
 # Build the Go binary
-GOOS=darwin GOARCH=arm64 go build -o ../php-runner-mac-arm64 wrapper.go
+GOOS=darwin GOARCH=arm64 go build -o ../build/mac-arm64 wrapper.go
 
 # Clean up
 rm -rf php_binary

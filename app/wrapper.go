@@ -5,54 +5,63 @@ import (
     "fmt"
     "os"
     "os/exec"
-    "path/filepath"
 )
 
+// Embed both PHP binary and app.php
 //go:embed php_binary/php
-var phpFiles embed.FS
+var phpBinaryFS embed.FS
 
-const (
-    entryScript = "./app.php"
-)
+//go:embed app.php
+var appScriptFS embed.FS
 
 func main() {
-    // Get the absolute path to the entry script
-    scriptPath, err := filepath.Abs(entryScript)
-    if err != nil {
-        fmt.Fprintf(os.Stderr, "Error resolving script path: %v\n", err)
-        os.Exit(1)
-    }
-
-    // Get the embedded PHP binary
-    phpBinary, err := phpFiles.ReadFile("php_binary/php")
+    // Extract PHP binary
+    phpBinary, err := phpBinaryFS.ReadFile("php_binary/php")
     if err != nil {
         fmt.Fprintf(os.Stderr, "Error reading embedded PHP binary: %v\n", err)
         os.Exit(1)
     }
 
-    // Create a temporary file for the PHP binary
-    tmpFile, err := os.CreateTemp("", "php-binary")
+    phpTemp, err := os.CreateTemp("", "php-binary")
     if err != nil {
-        fmt.Fprintf(os.Stderr, "Error creating temp file: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Error creating PHP binary temp file: %v\n", err)
         os.Exit(1)
     }
-    defer os.Remove(tmpFile.Name())
+    defer os.Remove(phpTemp.Name())
 
-    // Write the binary and make it executable
-    if err := os.WriteFile(tmpFile.Name(), phpBinary, 0644); err != nil {
-		fmt.Fprintf(os.Stderr, "Error writing PHP binary: %v\n", err)
-		os.Exit(1)
-	}
+    if err := os.WriteFile(phpTemp.Name(), phpBinary, 0644); err != nil {
+        fmt.Fprintf(os.Stderr, "Error writing PHP binary: %v\n", err)
+        os.Exit(1)
+    }
 
-	if err := os.Chmod(tmpFile.Name(), 0755); err != nil {
-		fmt.Fprintf(os.Stderr, "Error setting executable permission: %v\n", err)
-		os.Exit(1)
-	}
+    if err := os.Chmod(phpTemp.Name(), 0755); err != nil {
+        fmt.Fprintf(os.Stderr, "Error setting executable permission: %v\n", err)
+        os.Exit(1)
+    }
 
-    // Prepare the command
-    cmd := exec.Command(tmpFile.Name(), scriptPath)
+    // Extract app.php script
+    appScript, err := appScriptFS.ReadFile("app.php")
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error reading embedded PHP script: %v\n", err)
+        os.Exit(1)
+    }
 
-    // Forward any arguments passed to our binary to the PHP script
+    appTemp, err := os.CreateTemp("", "app-script")
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error creating PHP script temp file: %v\n", err)
+        os.Exit(1)
+    }
+    defer os.Remove(appTemp.Name())
+
+    if err := os.WriteFile(appTemp.Name(), appScript, 0644); err != nil {
+        fmt.Fprintf(os.Stderr, "Error writing PHP script: %v\n", err)
+        os.Exit(1)
+    }
+
+    // Execute the PHP binary with the embedded app.php script
+    cmd := exec.Command(phpTemp.Name(), appTemp.Name())
+
+    // Forward any arguments passed to the Go binary to PHP
     if len(os.Args) > 1 {
         cmd.Args = append(cmd.Args, os.Args[1:]...)
     }

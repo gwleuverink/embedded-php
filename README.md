@@ -12,3 +12,5 @@ To compile the script in `php/app.php` run:
 ```bash
 ./build.sh
 ```
+
+Afterwards a binary should be present in `./build/mac-arm` 🚀
