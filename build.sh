@@ -1,7 +1,9 @@
 #!/bin/bash
 
-# Move to the go directory first
-cd go
+# Mac only for now
+
+# Move to the app directory first
+cd app
 
 # Create directory for the PHP binary relative to build.go
 mkdir -p php_binary
