@@ -39,10 +39,15 @@ func main() {
     defer os.Remove(tmpFile.Name())
 
     // Write the binary and make it executable
-    if err := os.WriteFile(tmpFile.Name(), phpBinary, 0755); err != nil {
-        fmt.Fprintf(os.Stderr, "Error writing PHP binary: %v\n", err)
-        os.Exit(1)
-    }
+    if err := os.WriteFile(tmpFile.Name(), phpBinary, 0644); err != nil {
+		fmt.Fprintf(os.Stderr, "Error writing PHP binary: %v\n", err)
+		os.Exit(1)
+	}
+
+	if err := os.Chmod(tmpFile.Name(), 0755); err != nil {
+		fmt.Fprintf(os.Stderr, "Error setting executable permission: %v\n", err)
+		os.Exit(1)
+	}
 
     // Prepare the command
     cmd := exec.Command(tmpFile.Name(), scriptPath)
